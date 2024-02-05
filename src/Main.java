@@ -34,9 +34,14 @@ public class Main {
         }
     }
 
-    private static List<String[]> leerArchivoCSV(String filename) {
+    /**
+     * Lee los datos de un archivo CSV y los almacena en una lista de arrays de String.
+     * @param ruta Ruta del archivo CSV a leer.
+     * @return Lista de arrays de String con los datos leídos del archivo CSV.
+     */
+    private static List<String[]> leerArchivoCSV(String ruta) {
         List<String[]> datos = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
             String line;
             boolean primeraLinea = true;
             while ((line = br.readLine()) != null) {
@@ -53,6 +58,13 @@ public class Main {
         return datos;
     }
 
+    /**
+     * Calcula los precios totales de los pedidos y los guarda en un archivo CSV.
+     * @param pedidos Lista de arrays de String con los datos de los pedidos.
+     * @param productos Lista de arrays de String con los datos de los productos.
+     * @param ruta Ruta del archivo CSV donde se guardarán los precios de los pedidos.
+     * @return true si los datos se guardaron correctamente, false si hubo un error.
+     */
     private static boolean getPreciosPedidos(List<String[]> pedidos, List<String[]> productos, String ruta) {
         List<String[]> preciosSumados = new ArrayList<>();
         for (String[] order : pedidos) {
@@ -79,18 +91,15 @@ public class Main {
         return true;
     }
 
-    private static double calcularCostePedido(List<String[]> productos, int id) {
-        for (String[] producto : productos) {
-            if (Integer.parseInt(producto[0]) == id) {
-                return Double.parseDouble(producto[2]);
-            }
-        }
-        return 0.0; // Default cost if product ID not found
-    }
-
+    /**
+     * Calcula los clientes interesados en cada producto y los guarda en un archivo CSV.
+     * @param productos Lista de arrays de String con los datos de los productos.
+     * @param pedidos Lista de arrays de String con los datos de los pedidos.
+     * @param ruta Ruta del archivo CSV donde se guardarán los clientes interesados por producto.
+     * @return true si los datos se guardaron correctamente, false si hubo un error.
+     */
     private static boolean getClientesInteresados(List<String[]> productos, List<String[]> pedidos, String ruta) {
         List<List<String>> productCustomersLists = new ArrayList<>();
-
         for (int i = 0; i < productos.size(); i++) {
             productCustomersLists.add(new ArrayList<>());
         }
@@ -107,6 +116,7 @@ public class Main {
             }
         }
 
+        // Guardar los clientes interesados por producto en un archivo CSV
         try (PrintWriter writer = new PrintWriter(new FileWriter(ruta))) {
             writer.println("id,customer_ids");
             for (int i = 0; i < productCustomersLists.size(); i++) {
@@ -126,13 +136,21 @@ public class Main {
             return false;
         }
     }
+
+    /**
+     * Calcula el ranking de clientes según el gasto total y lo guarda en un archivo CSV.
+     * @param clientes Lista de arrays de String con los datos de los clientes.
+     * @param pedidos Lista de arrays de String con los datos de los pedidos.
+     * @param productos Lista de arrays de String con los datos de los productos.
+     * @param ruta Ruta del archivo CSV donde se guardarán los clientes ordenados por gasto.
+     * @return true si los datos se guardaron correctamente, false si hubo un error.
+     */
     private static boolean getRankingClientes(List<String[]> clientes, List<String[]> pedidos, List<String[]> productos, String ruta) {
         List<String[]> rankingClientes = new ArrayList<>();
-
         for (String[] cliente : clientes) {
-            String idCliente = cliente[0];
-            double totalEuros = calcularGastoCliente(pedidos, idCliente, productos);
-            String[] entradaRanking = {idCliente, cliente[1], cliente[2], String.valueOf(totalEuros)};
+            String clientID = cliente[0];
+            double totalEuros = calcularGastoCliente(pedidos, clientID, productos);
+            String[] entradaRanking = {clientID, cliente[1], cliente[2], String.valueOf(totalEuros)};
             rankingClientes.add(entradaRanking);
         }
 
@@ -150,6 +168,13 @@ public class Main {
         }
     }
 
+    /**
+     * Calcula el gasto total de un cliente en función de sus pedidos.
+     * @param pedidos Lista de arrays de String con los datos de los pedidos.
+     * @param idCliente ID del cliente para el cual se calculará el gasto.
+     * @param productos Lista de arrays de String con los datos de los productos.
+     * @return Gasto total del cliente.
+     */
     private static double calcularGastoCliente(List<String[]> pedidos, String idCliente, List<String[]> productos) {
         double totalEuros = 0.0;
         for (String[] pedido : pedidos) {
@@ -165,4 +190,18 @@ public class Main {
         return totalEuros;
     }
 
+    /**
+     * Calcula el costo de un producto según su ID.
+     * @param productos Lista de arrays de String con los datos de los productos.
+     * @param id ID del producto para el cual se calculará el costo.
+     * @return Costo del producto. Devuelve 0.0 en caso de que no se encuentre el ID.
+     */
+    private static double calcularCostePedido(List<String[]> productos, int id) {
+        for (String[] producto : productos) {
+            if (Integer.parseInt(producto[0]) == id) {
+                return Double.parseDouble(producto[2]);
+            }
+        }
+        return 0.0; // Costo predeterminado si no se encuentra el ID del producto
+    }
 }
